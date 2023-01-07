@@ -13,32 +13,34 @@ const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const autenticarUsuario = async () => {
+          try {
+            setCargando(true)
             const token = localStorage.getItem('token')
-            if(!token) {
-                setCargando(false)
-                return
-            }
-
-            const config = {
+     
+            if (token) {
+              const config = {
                 headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`
                 }
+              }
+     
+              const { data } = await clienteAxios('/usuarios/perfil', config)
+              setAuth(data)
             }
-
-            try {
-                const {data} = await clienteAxios('/usuarios/perfil',config)
-
-                setAuth(data)
-                navigate('/proyectos')
-            } catch (error) {
-                setAuth({})
-            }finally{
-                setCargando(false)
-            }
+     
+            // navigate("/proyectos");
+          } catch (error) {
+            console.log(error.response)
+            setAuth({})
+          } finally {
+            setCargando(false)
+          }
         }
-        return () => { autenticarUsuario() }
-    }, [])
+        return () => {
+          return autenticarUsuario()
+        }
+      }, [])
 
     const cerrarSesionAuth = () => {
         setAuth({})

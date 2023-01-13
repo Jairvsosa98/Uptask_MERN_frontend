@@ -17,7 +17,7 @@ const AuthProvider = ({ children }) => {
         setCargando(true)
         const token = localStorage.getItem('token')
  
-        if (!token) {
+        if (token) {
           const config = {
             headers: {
               'Content-Type': 'application/json',

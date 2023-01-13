@@ -1,66 +1,56 @@
-import { useState, useEffect, createContext } from 'react'
-import { useNavigate } from 'react-router-dom'
-import clienteAxios from '../config/clienteAxios'
+import { useState, useEffect, createContext } from "react";
+import clienteAxios from "../config/clienteAxios";
+import { useNavigate } from "react-router-dom";
 
-const AuthContext = createContext()
+const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
+  const [auth, setAuth] = useState({});
+  const [cargando, setCargando] = useState(true);
 
-    const [auth, setAuth] = useState({})
-    const [cargando, setCargando] = useState(true)
+  const navigate = useNavigate();
 
-    const navigate = useNavigate()
-
-   useEffect(() => {
+  useEffect(() => {
     const autenticarUsuario = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setCargando(false);
+        return;
+      }
+
+      const config = {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
       try {
-        setCargando(true)
-        const token = localStorage.getItem('token')
- 
-        if (token) {
-          const config = {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`
-            }
-          }
- 
-          const { data } = await clienteAxios('/usuarios/perfil', config)
-          setAuth(data)
-        }
- 
+        const { data } = await clienteAxios("/usuarios/perfil", config);
+        setAuth(data);
         // navigate("/proyectos");
       } catch (error) {
-        console.log(error.response)
-        setAuth({})
+        setAuth({});
       } finally {
-        setCargando(false)
+        setCargando(false);
       }
-    }
+    };
     return () => {
-      return autenticarUsuario()
-    }
-  }, [])
+      autenticarUsuario();
+    };
+  }, []);
 
-    const cerrarSesionAuth = () => {
-        setAuth({})
-    }
+  const cerrarSesionAuth = () => {
+    setAuth({});
+  };
+  return (
+    <AuthContext.Provider value={{ auth, setAuth, cargando, cerrarSesionAuth }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
 
-    return (
-        <AuthContext.Provider
-            value={{
-                auth,
-                setAuth,
-                cargando,
-                cerrarSesionAuth
-            }}
-        >
-            {children}
-        </AuthContext.Provider>
-    )
-}
+export { AuthProvider };
 
-export {
-    AuthProvider
-}
-export default AuthContext
+export default AuthContext;
